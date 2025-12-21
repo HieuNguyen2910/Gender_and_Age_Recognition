@@ -17,7 +17,7 @@ Make sure you have **Python 3.9** installed. Then install the required dependenc
 ```bash
 git clone https://github.com/HieuNguyen2910/Gender_and_Age_Recognition
 cd Gender_and_Age_Recognition
-```bash
+```
 
 2. Create and activate Conda environment
 
