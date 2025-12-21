@@ -14,7 +14,7 @@ Make sure you have **Python 3.9** installed. Then install the required dependenc
 
 ```bash
 pip install -r requirements.txt
-
+```
 ## Usage
 
 Download the pretrained model weights and place them into the appropriate directory (e.g. `weights/`).
