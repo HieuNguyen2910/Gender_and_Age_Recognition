@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Age & Gender Prediction</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<style>
+body {
+    background-color: #f4f6f9;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    transition: background 0.3s, color 0.3s;
+}
+body.dark-mode { background-color:#121212; color:#f5f5f5; }
+
+h2,h4{ font-weight:600; }
+
+/* HEADER */
+header{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:15px 30px; background:linear-gradient(135deg,#0d6efd,#3a8cff);
+    border-radius:12px; color:white; margin-bottom:30px;
+}
+.header-logo{ display:flex; align-items:center; gap:10px; }
+.header-logo img{ height:40px; }
+nav a{ color:white; margin-left:20px; text-decoration:none; font-weight:500; transition:0.2s; }
+nav a:hover{ color:#ffdd57; }
+.theme-toggle{ cursor:pointer; font-size:1.3rem; }
+
+/* UPLOAD SECTION */
+.upload-section{
+    background:white; padding:25px; border-radius:12px; box-shadow:0 6px 25px rgba(0,0,0,0.08);
+    text-align:center; margin-bottom:30px; transition:background 0.3s,color 0.3s;
+}
+body.dark-mode .upload-section{ background:#1e1e1e; color:#f5f5f5; }
+
+#drop-area{
+    border:2px dashed #0d6efd; border-radius:12px; padding:40px; cursor:pointer; transition:0.2s;
+}
+#drop-area.dragover{ background:#e6f0ff; }
+
+.form-control, select{ margin-top:10px; }
+
+/* DISPLAY SECTION */
+.display-section{
+    display:flex; flex-wrap:wrap; gap:30px; justify-content:center; margin-bottom:40px;
+}
+.media-box, .result-panel{
+    border-radius:16px; box-shadow:0 8px 25px rgba(0,0,0,0.1);
+    padding:20px; background:linear-gradient(145deg,#ffffff,#f0f2f5); transition:background 0.3s,color 0.3s;
+}
+body.dark-mode .media-box, body.dark-mode .result-panel{ background:#1e1e1e; color:#f5f5f5; }
+
+.media-box{
+    flex:1 1 400px; max-width:600px; display:flex; justify-content:center; align-items:center;
+}
+.media-box img, .media-box video{
+    max-width:100%; max-height:450px; border-radius:12px; border:3px solid #0d6efd;
+    box-shadow:0 6px 25px rgba(0,0,0,0.15); background:linear-gradient(145deg,#ffffff,#e6f0ff);
+}
+
+.result-panel{
+    flex:1 1 280px; max-width:320px; display:flex; flex-direction:column; align-items:center;
+}
+.result-panel h4{ color:#0d6efd; margin-bottom:25px; }
+
+.gender-icons{ display:flex; gap:40px; justify-content:center; margin-bottom:25px; }
+.gender-icon{ font-size:70px; opacity:0.25; transition:all 0.3s ease; }
+.active-gender{ opacity:1 !important; transform:scale(1.2); }
+.male-active{ color:#0d6efd; text-shadow:0 0 20px rgba(13,110,253,0.6); }
+.female-active{ color:#e83e8c; text-shadow:0 0 20px rgba(232,62,140,0.6); }
+
+.age-box{
+    width:100%; padding:15px 0; text-align:center; font-size:24px; font-weight:600;
+    background:#ffffff; border-radius:12px; border:2px solid #dee2e6;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);
+}
+body.dark-mode .age-box{ background:#1e1e1e; color:#f5f5f5; border-color:#555; }
+
+/* Responsive */
+@media(max-width:768px){ .display-section{flex-direction:column;align-items:center;} }
+</style>
+</head>
+<body class="p-4">
+
+<!-- HEADER -->
+<header>
+    <div class="header-logo">
+        <img src="https://via.placeholder.com/40" alt="Logo">
+        <span>Age & Gender AI</span>
+    </div>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Documentation</a>
+        <a href="#">Contact</a>
+    </nav>
+    <div class="theme-toggle" id="theme-toggle" title="Toggle Light/Dark">
+        <i class="bi bi-moon-fill"></i>
+    </div>
+</header>
+
+<!-- UPLOAD / INPUT -->
+<div class="upload-section">
+    <h2 class="mb-4">Upload ảnh hoặc video để dự đoán</h2>
+    <form method="POST" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+        <div id="drop-area">
+            <p>Kéo thả media vào đây hoặc click để chọn file</p>
+            <input type="file" id="media-input" name="image" accept="image/*,video/*" style="display:none;" required>
+        </div>
+
+        <!-- Model -->
+        <select class="form-select mt-3" name="model">
+            <option value="mobilenetv2">MobileNetV2</option>
+            <option value="resnet50">ResNet50</option>
+        </select>
+
+        <!-- Advanced -->
+        <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="advanced-settings" name="advanced">
+            <label class="form-check-label" for="advanced-settings">Advanced Settings</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">Dự đoán</button>
+    </form>
+
+    {% if error %}
+    <div class="alert alert-danger mt-3">{{ error }}</div>
+    {% endif %}
+</div>
+
+<!-- DISPLAY -->
+<div class="display-section">
+    <div class="media-box" id="media-box">
+        {% if result %}
+            {% if is_video %}
+            <video src="{{ result }}" controls></video>
+            {% else %}
+            <img src="{{ result }}" alt="Predicted Image">
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="result-panel" id="result-panel">
+        <h4>Kết quả dự đoán</h4>
+        <div class="gender-icons">
+            <i id="icon-male" class="gender-icon bi bi-gender-male"></i>
+            <i id="icon-female" class="gender-icon bi bi-gender-female"></i>
+        </div>
+        <div class="age-box">
+            Age = <span id="age-value">0</span>
+        </div>
+    </div>
+</div>
+
+<script>
+const themeToggle = document.getElementById('theme-toggle');
+themeToggle.addEventListener('click', ()=> document.body.classList.toggle('dark-mode'));
+
+// Drag & drop + preview
+const dropArea = document.getElementById('drop-area');
+const input = document.getElementById('media-input');
+const mediaBox = document.getElementById('media-box');
+
+dropArea.addEventListener('click', ()=> input.click());
+dropArea.addEventListener('dragover', e=> { e.preventDefault(); dropArea.classList.add('dragover'); });
+dropArea.addEventListener('dragleave', ()=> dropArea.classList.remove('dragover'));
+dropArea.addEventListener('drop', e=> { 
+    e.preventDefault(); dropArea.classList.remove('dragover'); 
+    if(e.dataTransfer.files[0]) showPreview(e.dataTransfer.files[0]); 
+});
+input.addEventListener('change', e=> { if(e.target.files[0]) showPreview(e.target.files[0]); });
+
+function showPreview(file){
+    mediaBox.innerHTML = '';
+    const type = file.type.split('/')[0];
+    const reader = new FileReader();
+    reader.onload = function(evt){
+        if(type==='image'){
+            const img = document.createElement('img');
+            img.src = evt.target.result;
+            img.alt = 'Preview';
+            mediaBox.appendChild(img);
+        } else if(type==='video'){
+            const vid = document.createElement('video');
+            vid.src = evt.target.result;
+            vid.controls = true;
+            mediaBox.appendChild(vid);
+        }
+    }
+    reader.readAsDataURL(file);
+}
+
+// Hiển thị kết quả predict
+document.addEventListener("DOMContentLoaded", function(){
+    {% if gender_text %}
+    const gender = "{{ gender_text }}"; 
+    const age = "{{ age_val }}";
+    const maleIcon = document.getElementById("icon-male");
+    const femaleIcon = document.getElementById("icon-female");
+
+    // Logic hiển thị gender
+    if(gender.toLowerCase() === 'male'){
+        maleIcon.classList.add('active-gender','male-active');
+        femaleIcon.classList.remove('active-gender','female-active');
+    } else {
+        femaleIcon.classList.add('active-gender','female-active');
+        maleIcon.classList.remove('active-gender','male-active');
+    }
+
+    document.getElementById('age-value').innerText = age;
+
+    // Cập nhật mediaBox với ảnh/video predict từ backend
+    {% if result %}
+    mediaBox.innerHTML = '';
+    {% if is_video %}
+    const vid = document.createElement('video');
+    vid.src = "{{ result }}";
+    vid.controls = true;
+    mediaBox.appendChild(vid);
+    {% else %}
+    const img = document.createElement('img');
+    img.src = "{{ result }}";
+    img.alt = 'Predicted Image';
+    mediaBox.appendChild(img);
+    {% endif %}
+    {% endif %}
+
+    {% endif %}
+});
+</script>
+
+</body>
+</html>

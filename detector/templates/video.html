@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Age & Gender Prediction – Video</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+<style>
+:root {
+    --primary:#0d6efd;
+    --primary-light:#3a8cff;
+    --bg-light:#f4f6f9;
+    --bg-dark:#121212;
+    --card-light:#fff;
+    --card-dark:#1e1e1e;
+    --text-dark:#222;
+    --text-light:#f5f5f5;
+    --shadow:rgba(0,0,0,.12);
+}
+
+body{
+    font-family:"Segoe UI",sans-serif;
+    background:var(--bg-light);
+    color:var(--text-dark);
+    transition:.3s;
+}
+body.dark-mode{
+    background:var(--bg-dark);
+    color:var(--text-light);
+}
+
+/* ================= HEADER ================= */
+header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:15px 30px;
+    margin-bottom:35px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-light));
+    border-radius:16px;
+    box-shadow:0 6px 25px var(--shadow);
+}
+.header-logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+.header-logo img{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+.theme-toggle{
+    font-size:1.4rem;
+    cursor:pointer;
+    color:white;
+}
+
+/* ================= NAV ================= */
+.nav-menu{
+    display:flex;
+    gap:50px;
+}
+.nav-menu a{
+    color: white;
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: 500;
+    text-decoration: none;
+
+    /* Hiệu ứng nổi + khung */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(6px);
+
+    transition: all 0.3s ease;
+}
+.nav-menu a.active{
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.9);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 0 15px rgba(255,255,255,0.55);
+    transform: translateY(-3px);
+}
+
+/* ================= UPLOAD ================= */
+.upload-section{
+    background:var(--card-light);
+    padding:30px;
+    border-radius:16px;
+    box-shadow:0 8px 25px var(--shadow);
+    text-align:center;
+}
+body.dark-mode .upload-section{
+    background:var(--card-dark);
+}
+#drop-area{
+    border:2px dashed var(--primary);
+    border-radius:16px;
+    padding:50px;
+    cursor:pointer;
+    transition:.3s;
+}
+#drop-area.dragover{
+    background:rgba(13,110,253,.15);
+}
+
+/* ================= DISPLAY ================= */
+.display-section{
+    display:flex;
+    gap:35px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-top:35px;
+}
+.media-box{
+    flex:1 1 600px;
+    max-width:720px;
+    background:var(--card-light);
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 30px var(--shadow);
+}
+body.dark-mode .media-box{
+    background:var(--card-dark);
+}
+.media-box video{
+    width:100%;
+    border-radius:16px;
+    border:3px solid var(--primary);
+}
+
+/* ================= RESULT PANEL ================= */
+.result-panel{
+    flex:1 1 260px;
+    max-width:300px;
+    background:var(--card-light);
+    padding:25px;
+    border-radius:18px;
+    text-align:center;
+    box-shadow:0 10px 30px var(--shadow);
+}
+body.dark-mode .result-panel{
+    background:var(--card-dark);
+}
+.gender-icons{
+    display:flex;
+    justify-content:center;
+    gap:45px;
+    margin-bottom:20px;
+}
+.gender-icon{
+    font-size:70px;
+    opacity:.25;
+    transition:.3s;
+}
+.active-gender{
+    opacity:1;
+    transform:scale(1.2);
+}
+.male-active{color:var(--primary)}
+.female-active{color:#e83e8c}
+.age-box{
+    font-size:26px;
+    font-weight:bold;
+    padding:15px;
+    border-radius:14px;
+    border:2px solid #ccc;
+}
+</style>
+</head>
+
+<body class="p-4">
+
+<header>
+    <div class="header-logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712101.png">
+        <span class="fs-4 fw-bold">Age & Gender AI</span>
+    </div>
+
+    <nav class="nav-menu">
+        <a href="/">Image</a>
+        <a href="/video" class="active">Video</a>
+        <a href="/realtime">Realtime</a>
+    </nav>
+
+    <div class="theme-toggle" id="theme-toggle">
+        <i class="bi bi-moon-fill"></i>
+    </div>
+</header>
+
+<!-- ================= UPLOAD ================= -->
+<div class="upload-section">
+    <h2 class="mb-4 fw-bold">Upload video để dự đoán</h2>
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<div id="drop-area">
+    <p class="mb-2">📁 Kéo thả video hoặc click để chọn</p>
+    <input type="file" id="video-input" name="video" accept="video/*" hidden required>
+</div>
+
+<select class="form-select mt-3" name="model">
+    <option value="mobilenetv2">MobileNetV2</option>
+    <option value="resnet50">ResNet50</option>
+</select>
+
+<button class="btn btn-primary w-100 mt-3 py-2 fw-semibold">
+    🚀 Xử lý video
+</button>
+</form>
+
+{% if error %}
+<div class="alert alert-danger mt-3">{{ error }}</div>
+{% endif %}
+</div>
+
+<!-- ================= DISPLAY ================= -->
+<div class="display-section">
+
+<div class="media-box" id="media-box">
+{% if output_video %}
+    <video id="result-video" controls autoplay muted preload="metadata">
+        <source src="{{ output_video }}" type="video/mp4">
+    </video>
+{% elif input_video %}
+    <video controls muted preload="metadata">
+        <source src="{{ input_video }}" type="video/mp4">
+    </video>
+{% else %}
+    <p class="text-muted text-center">Chưa có video</p>
+{% endif %}
+</div>
+
+<div class="result-panel">
+<h4 class="fw-bold mb-3">Kết quả dự đoán</h4>
+
+<div class="gender-icons">
+    <i id="icon-male" class="gender-icon bi bi-gender-male"></i>
+    <i id="icon-female" class="gender-icon bi bi-gender-female"></i>
+</div>
+
+<div class="age-box">
+    Age = <span id="age-value">--</span>
+</div>
+</div>
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+/* DARK MODE */
+document.getElementById("theme-toggle").onclick=()=>{
+    document.body.classList.toggle("dark-mode");
+};
+
+/* DRAG & DROP */
+const dropArea=document.getElementById("drop-area");
+const input=document.getElementById("video-input");
+const mediaBox=document.getElementById("media-box");
+
+dropArea.onclick=()=>input.click();
+["dragenter","dragover","dragleave","drop"].forEach(ev=>{
+    dropArea.addEventListener(ev,e=>e.preventDefault());
+});
+dropArea.addEventListener("dragover",()=>dropArea.classList.add("dragover"));
+dropArea.addEventListener("dragleave",()=>dropArea.classList.remove("dragover"));
+dropArea.addEventListener("drop",e=>{
+    dropArea.classList.remove("dragover");
+    input.files=e.dataTransfer.files;
+});
+
+/* PREVIEW TRƯỚC SUBMIT */
+input.addEventListener("change",()=>{
+    const file=input.files[0];
+    if(!file) return;
+    const url=URL.createObjectURL(file);
+    mediaBox.innerHTML=`
+        <h5 class="mb-3 text-muted">🎬 Video đã chọn</h5>
+        <video controls muted>
+            <source src="${url}" type="${file.type}">
+        </video>`;
+});
+
+/* ===== TIMELINE THEO TỪNG GIÂY ===== */
+const timeline={{ timeline|safe|default:"[]" }};
+const video=document.getElementById("result-video");
+
+function clearGender(){
+    document.getElementById("icon-male").className="gender-icon bi bi-gender-male";
+    document.getElementById("icon-female").className="gender-icon bi bi-gender-female";
+}
+
+if(video && timeline.length){
+video.addEventListener("timeupdate",()=>{
+    const sec=Math.floor(video.currentTime);
+    const data=timeline.find(t=>t.second===sec);
+    if(!data) return;
+
+    document.getElementById("age-value").innerText=data.age;
+    clearGender();
+
+    if(data.gender==="Male")
+        document.getElementById("icon-male").classList.add("active-gender","male-active");
+    if(data.gender==="Female")
+        document.getElementById("icon-female").classList.add("active-gender","female-active");
+});
+}
+</script>
+
+</body>
+</html>

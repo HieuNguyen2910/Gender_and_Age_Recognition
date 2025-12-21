@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Age & Gender Prediction – Realtime</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+<style>
+/* ---------------- ROOT THEME ---------------- */
+:root {
+    --primary: #0d6efd;
+    --primary-light: #3a8cff;
+    --bg-light: #f4f6f9;
+    --bg-dark: #121212;
+    --card-light: #ffffff;
+    --card-dark: #1e1e1e;
+    --text-dark: #222;
+    --text-light: #f5f5f5;
+    --shadow: rgba(0,0,0,0.12);
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    background: var(--bg-light);
+    transition: .3s ease-in-out;
+    color: var(--text-dark);
+}
+body.dark-mode {
+    background: var(--bg-dark);
+    color: var(--text-light);
+}
+
+/* ---------------- HEADER ---------------- */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    margin-bottom: 35px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 16px;
+    box-shadow: 0 6px 25px var(--shadow);
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-logo img {
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+/* ---------------- NAV MENU ---------------- */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+.nav-menu a {
+    color: white;
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: 500;
+    text-decoration: none;
+
+    /* Hiệu ứng nổi + khung */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(6px);
+
+    transition: all 0.3s ease;
+}
+
+.nav-menu a:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.7);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(255,255,255,0.35);
+}
+
+.nav-menu a.active {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.9);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 0 15px rgba(255,255,255,0.55);
+    transform: translateY(-3px);
+}
+
+.theme-toggle {
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: white;
+}
+
+/* ---------------- CONTENT ---------------- */
+.page-content {
+    display: flex;
+    gap: 35px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Webcam box */
+.media-box {
+    flex: 1 1 680px;
+    max-width: 720px;
+    padding: 25px;
+    border-radius: 18px;
+    background: var(--card-light);
+    box-shadow: 0 10px 30px var(--shadow);
+    text-align: center;
+}
+body.dark-mode .media-box {
+    background: var(--card-dark);
+}
+
+#video-frame {
+    width: 100%;
+    max-height: 500px;
+    border-radius: 16px;
+    border: 3px solid var(--primary);
+    object-fit: cover;
+}
+
+/* Result panel */
+.result-panel {
+    flex: 1 1 260px;
+    max-width: 300px;
+    padding: 25px;
+    border-radius: 18px;
+    background: var(--card-light);
+    box-shadow: 0 10px 30px var(--shadow);
+    text-align: center;
+}
+body.dark-mode .result-panel {
+    background: var(--card-dark);
+}
+
+.result-panel h4 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+.gender-icons {
+    display: flex;
+    justify-content: center;
+    gap: 45px;
+    margin-bottom: 25px;
+}
+
+.gender-icon {
+    font-size: 75px;
+    opacity: .25;
+    transition: .35s ease;
+}
+
+.active-gender {
+    opacity: 1 !important;
+    transform: scale(1.25);
+}
+
+.male-active {
+    color: var(--primary);
+    text-shadow: 0 0 20px rgba(13,110,253,0.6);
+}
+
+.female-active {
+    color: #e83e8c;
+    text-shadow: 0 0 20px rgba(232,62,140,0.6);
+}
+
+.age-box {
+    font-size: 26px;
+    font-weight: 700;
+    padding: 18px 0;
+    background: var(--card-light);
+    border-radius: 14px;
+    border: 2px solid #d0d0d0;
+}
+body.dark-mode .age-box {
+    background: var(--card-dark);
+    border-color: #555;
+}
+</style>
+</head>
+
+<body class="p-4">
+
+<!-- HEADER -->
+<header>
+    <div class="header-logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712101.png" />
+        <span class="fs-4 fw-bold">Age & Gender AI</span>
+    </div>
+
+    <nav class="nav-menu">
+        <a href="/" class="{% if request.path == '/' %}active{% endif %}">Image</a>
+        <a href="/video" class="{% if request.path == '/video' %}active{% endif %}">Video</a>
+        <a href="/realtime" class="{% if request.path == '/realtime' %}active{% endif %}">Realtime</a>
+    </nav>
+
+    <div class="theme-toggle" id="theme-toggle">
+        <i class="bi bi-moon-fill"></i>
+    </div>
+</header>
+
+<!-- PAGE CONTENT -->
+<div class="page-content">
+
+    <!-- Webcam -->
+    <div class="media-box">
+        <h4 class="mb-3">Realtime Webcam</h4>
+
+        <img id="video-frame" src="/video_feed/" alt="Video Stream" />
+
+        <div class="mt-4 d-flex justify-content-center gap-3">
+            <button class="btn btn-primary px-4" onclick="startWebcam()">Start</button>
+            <button class="btn btn-danger px-4" onclick="stopWebcam()">Stop</button>
+        </div>
+    </div>
+
+    <!-- Result Panel -->
+    <div class="result-panel">
+        <h4>Kết quả</h4>
+
+        <div class="gender-icons">
+            <i id="male-icon" class="bi bi-gender-male gender-icon"></i>
+            <i id="female-icon" class="bi bi-gender-female gender-icon"></i>
+        </div>
+
+        <div id="age-box" class="age-box">Age: --</div>
+    </div>
+
+</div>
+
+<script>
+// ------------ Dark Mode Toggle -------------
+const themeBtn = document.getElementById("theme-toggle");
+themeBtn.onclick = () => document.body.classList.toggle("dark-mode");
+
+// ------------ Refs -------------
+const videoFrame = document.getElementById("video-frame");
+const maleIcon = document.getElementById("male-icon");
+const femaleIcon = document.getElementById("female-icon");
+const ageBox = document.getElementById("age-box");
+
+// ------------ State control -------------
+let isPredicting = false;
+let predictTimer = null;
+
+// ------------ Webcam Start/Stop -------------
+function startWebcam() {
+    videoFrame.src = "/video_feed/";
+
+    // BẬT dự đoán trên backend
+    fetch("/start_prediction/");
+
+    startPrediction();
+}
+
+function stopWebcam() {
+    // TẮT dự đoán trên backend
+    fetch("/stop_prediction/");
+
+    stopPrediction();
+    videoFrame.src = "/video_feed/";
+}
+
+// ------------ Prediction Control -------------
+function startPrediction() {
+    if (isPredicting) return;
+    isPredicting = true;
+
+    predictTimer = setInterval(() => {
+        fetch("/realtime_result/")
+            .then(res => res.json())
+            .then(data => {
+                if (!data || data.gender === "None" || data.age === null) return;
+
+                // Reset icons
+                maleIcon.classList.remove("active-gender", "male-active");
+                femaleIcon.classList.remove("active-gender", "female-active");
+
+                // Gender
+                if (data.gender === "Male") {
+                    maleIcon.classList.add("active-gender", "male-active");
+                } else if (data.gender === "Female") {
+                    femaleIcon.classList.add("active-gender", "female-active");
+                }
+
+                // Age
+                ageBox.innerText = "Age: " + data.age;
+            })
+            .catch(() => {});
+    }, 1000);
+}
+
+function stopPrediction() {
+    isPredicting = false;
+    clearInterval(predictTimer);
+
+    maleIcon.classList.remove("active-gender", "male-active");
+    femaleIcon.classList.remove("active-gender", "female-active");
+    ageBox.innerText = "Age: --";
+}
+</script>
+
+</body>
+</html>
