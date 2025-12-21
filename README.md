@@ -17,15 +17,16 @@ pip install -r requirements.txt
 ```
 ## Usage
 
-Download the pretrained model weights and place them into the appropriate directory (e.g. `weights/`).
+Download the pretrained model weights and place them into the appropriate directory (`weights/`).
 
 🔗 **Weights download link:**  
-*(Paste your link here)*
+*(https://drive.google.com/drive/u/8/folders/1v_1ODG5t86MGQYO3lt52oUXXec8xOo7g)*
 
 Make sure the file paths in the source code match the downloaded weights.
 
----
 Run the Django Development Server
 ```bash
 python manage.py runserver
 
+Access the Web Application
+Open your browser and go to http://127.0.0.1:8000/
