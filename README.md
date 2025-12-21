@@ -45,6 +45,14 @@ Run the Django Development Server
 python manage.py runserver
 ```
 
-Access the Web Application
-Open your browser and go to 
+Access the Web Application: 
+open your browser and go to 
 *(http://127.0.0.1:8000/)*
+
+## Demo
+
+Below is an example of gender and age prediction on a sample image.
+
+![Demo Result](assets/demo.jpg)
+
+
