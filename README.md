@@ -27,6 +27,8 @@ Make sure the file paths in the source code match the downloaded weights.
 Run the Django Development Server
 ```bash
 python manage.py runserver
+```
 
 Access the Web Application
-Open your browser and go to http://127.0.0.1:8000/
+Open your browser and go to 
+*(http://127.0.0.1:8000/)*
