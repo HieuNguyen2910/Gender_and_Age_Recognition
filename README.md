@@ -14,5 +14,18 @@ Make sure you have **Python 3.9** installed. Then install the required dependenc
 
 ```bash
 pip install -r requirements.txt
+
+## Usage
+
+Download the pretrained model weights and place them into the appropriate directory (e.g. `weights/`).
+
+🔗 **Weights download link:**  
+*(Paste your link here)*
+
+Make sure the file paths in the source code match the downloaded weights.
+
+---
+Run the Django Development Server
+```bash
 python manage.py runserver
 
