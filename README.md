@@ -12,9 +12,24 @@ Gender and Age Recognition System automatically detects faces and predicts gende
 
 Make sure you have **Python 3.9** installed. Then install the required dependencies and start the server using the following commands:
 
+1. Clone the repository
+2. 
+```bash
+git clone https://github.com/HieuNguyen2910/Gender_and_Age_Recognition
+cd Gender_and_Age_Recognition
+
+2. Create and activate Conda environment
+
+```bash
+conda create -n agegender python=3.9 -y
+conda activate agegender
+```
+
+3. Install required dependencies
 ```bash
 pip install -r requirements.txt
 ```
+
 ## Usage
 
 Download the pretrained model weights and place them into the appropriate directory (`weights/`).
@@ -32,9 +47,3 @@ python manage.py runserver
 Access the Web Application
 Open your browser and go to 
 *(http://127.0.0.1:8000/)*
-
-## Demo
-
-Below is an example of gender and age prediction on a sample image.
-![Demo Result](assets/demo.jpg)
-
